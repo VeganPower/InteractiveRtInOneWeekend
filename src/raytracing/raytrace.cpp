@@ -92,7 +92,7 @@ color ray_color(
         //const double light_pdf_val = light_pdf.value(ray_dir);
         //pdf_val = 2.f / (mat_pdf_val + light_pdf_val);
     }
-    ray scattered = ray(rec.p, ray_dir, r.time());
+    ray scattered = ray(rec.p, ray_dir);
     //auto pdf_val = p.value(scattered.direction());
     vec3 result = emitted;
     vec3 attenuation = srec.attenuation * rec.mat_ptr->scattering_pdf(r, rec, scattered);
@@ -141,9 +141,6 @@ struct Rectangle
 
 RtScene::RtScene()
 {
-
-    // World
-
     //auto lights = make_shared<hittable_list>();
     //lights->add(make_shared<xz_rect>(213, 343, 227, 332, 554, shared_ptr<material>()));
     //lights->add(make_shared<sphere>(point3(190, 90, 190), 90, shared_ptr<material>()));
@@ -168,20 +165,6 @@ void raytrace(Image& out_image, RtScene const& scene)
 {
     int image_width = (int)out_image.width;
     int image_height = (int)out_image.height;
-
-    float aspect_ratio =  (float)image_width / (float)image_height;
-    // Camera
-    point3 lookfrom(278, 278, -800);
-    point3 lookat(278, 278, 0);
-    vec3 vup(0, 1, 0);
-
-    auto dist_to_focus = 10.0;
-    auto aperture = 0.0;
-    auto vfov = 40.0;
-    auto time0 = 0.0;
-    auto time1 = 1.0;
-
-    camera cam = camera(lookfrom, lookat, vup, vfov, aspect_ratio, aperture, dist_to_focus, time0, time1);
 
     // Render
     StopWatch sw("Render");
@@ -213,7 +196,7 @@ void raytrace(Image& out_image, RtScene const& scene)
                 // {
                     auto u = (i + random_dis(random_gen)) / (image_width-1);
                     auto v = (j + random_dis(random_gen)) / (image_height-1);
-                    ray r = cam.get_ray(u, 1.f - v, random_gen);
+                    ray r = scene.cam.get_ray(u, 1.f - v, random_gen);
                     color pixel_color = ray_color(r, scene.background, scene.world, scene.lights.get(), scene.max_depth, random_gen);
                 // }
                     check_nan(pixel_color);

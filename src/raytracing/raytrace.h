@@ -4,6 +4,7 @@
 #include "hittable_list.h"
 #include "hittable.h"
 #include "image.h"
+#include "camera.h"
 
 struct RtScene
 {
@@ -12,6 +13,7 @@ struct RtScene
     hittable_list world;
     std::shared_ptr<xz_rect> lights;
     color background;
+    camera cam;
 
     int samples_per_pixel;
     int max_depth = 8;

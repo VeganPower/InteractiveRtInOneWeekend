@@ -17,6 +17,7 @@
 
 #include "camera.h"
 #include "raytracing/raytrace.h"
+#include "raytracing/camera.h"
 
 //using namespace glm;
 
@@ -65,7 +66,29 @@ struct AppData
     void update_camera();
     void rt_render();
     void reset_image();
+    void set_camera();
 };
+
+void AppData::set_camera()
+{
+    int image_width = (int)display_size.width;
+    int image_height = (int)display_size.height;
+
+    float aspect_ratio =  (float)image_width / (float)image_height;
+    // Camera
+    point3 lookfrom(278, 278, -800);
+    point3 lookat(278, 278, 0);
+    vec3 vup(0, 1, 0);
+
+    auto dist_to_focus = 10.0;
+    auto aperture = 0.0;
+    auto vfov = 40.0;
+    auto time0 = 0.0;
+    auto time1 = 1.0;
+
+    scene.cam = ::camera(lookfrom, lookat, vup, vfov, aspect_ratio, aperture, dist_to_focus);
+
+}
 
 void AppData::update_camera()
 {
@@ -198,14 +221,14 @@ bool init(AppData& app)
         return false;
     }
     glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 4);
-    glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 6);
+    glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 5);
     glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE);
     glfwWindowHint(GLFW_OPENGL_DEBUG_CONTEXT, GLFW_TRUE);
     glfwWindowHint(GLFW_SAMPLES, 4);
     app.window = glfwCreateWindow(640, 480, "Hmd simulator", NULL, NULL);
     if (app.window == nullptr)
     {
-        fprintf(stderr, "Failed to create window loader!\n");
+        fprintf(stderr, "Failed to create window!\n");
         glfwTerminate();
         return false;
     }
@@ -268,7 +291,7 @@ bool init(AppData& app)
     glfwGetFramebufferSize(app.window, &w, &h);
     app.update_view_size(w, h);
 
-
+    app.set_camera();
     fill_plot(app);
     app.offset = {0.f, 0.f};
     app.size = 35.f;
