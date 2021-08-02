@@ -37,7 +37,7 @@ struct hit_record
 struct hittable
 {
     virtual bool hit(const ray& r, double t_min, double t_max, hit_record& rec) const = 0;
-    virtual bool bounding_box(double time0, double time1, aabb& output_box) const = 0;
+    virtual bool bounding_box(aabb& output_box) const = 0;
 
     virtual double pdf_value(const vec3& o, const vec3& v) const {
         return 0.0;
@@ -63,8 +63,8 @@ class flip_face : public hittable {
             return true;
         }
 
-        virtual bool bounding_box(double time0, double time1, aabb& output_box) const override {
-            return ptr->bounding_box(time0, time1, output_box);
+        virtual bool bounding_box(aabb& output_box) const override {
+            return ptr->bounding_box(output_box);
         }
 
     public:
@@ -80,7 +80,7 @@ class translate : public hittable {
         virtual bool hit(
             const ray& r, double t_min, double t_max, hit_record& rec) const override;
 
-        virtual bool bounding_box(double time0, double time1, aabb& output_box) const override;
+        virtual bool bounding_box(aabb& output_box) const override;
 
     public:
         shared_ptr<hittable> ptr;
@@ -98,8 +98,8 @@ inline bool translate::hit(const ray& r, double t_min, double t_max, hit_record&
     return true;
 }
 
-inline bool translate::bounding_box(double time0, double time1, aabb& output_box) const {
-    if (!ptr->bounding_box(time0, time1, output_box))
+inline bool translate::bounding_box(aabb& output_box) const {
+    if (!ptr->bounding_box(output_box))
         return false;
 
     output_box = aabb(
@@ -116,7 +116,7 @@ public:
     virtual bool hit(
         const ray& r, double t_min, double t_max, hit_record& rec) const override;
 
-    virtual bool bounding_box(double time0, double time1, aabb& output_box) const override {
+    virtual bool bounding_box(aabb& output_box) const override {
         output_box = bbox;
         return hasbox;
     }
@@ -134,7 +134,7 @@ inline rotate_y::rotate_y(shared_ptr<hittable> p, double angle) : ptr(p) {
     auto radians = degrees_to_radians(angle);
     sin_theta = sin(radians);
     cos_theta = cos(radians);
-    hasbox = ptr->bounding_box(0, 1, bbox);
+    hasbox = ptr->bounding_box(bbox);
 
     point3 min( infinity,  infinity,  infinity);
     point3 max(-infinity, -infinity, -infinity);

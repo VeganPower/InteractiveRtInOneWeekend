@@ -106,7 +106,8 @@ color ray_color(
 }
 
 
-hittable_list cornell_box() {
+hittable_list cornell_box()
+{
     hittable_list objects;
 
     auto red   = make_shared<lambertian>(color(.65, .05, .05));
