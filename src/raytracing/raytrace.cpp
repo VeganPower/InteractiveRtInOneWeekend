@@ -22,6 +22,7 @@
 #include "raytrace.h"
 
 #include <random>
+#include <vector>
 #include <execution>
 
 color ray_color(

@@ -1,11 +1,11 @@
 cmake_minimum_required(VERSION 3.0.0)
 
 # prject name
-project(Points)
+project(oneWeekRt)
 
-add_executable(Points)
+add_executable(oneWeekRt)
 
-target_sources(Points PRIVATE
+target_sources(oneWeekRt PRIVATE
     src/angle.h
     src/arcball_imgui.h
     src/arcball_imgui.cpp
@@ -28,7 +28,9 @@ target_sources(Points PRIVATE
     src/raytracing/raytrace.cpp
 )
 
-set_property(TARGET Points PROPERTY CXX_STANDARD 20)
+add_compile_definitions(WIN32_LEAN_AND_MEAN NOMINMAX NOGDI)
+
+set_property(TARGET oneWeekRt PROPERTY CXX_STANDARD 20)
 
 # find dependencies
 set (CMAKE_MODULE_PATH "${CMAKE_SOURCE_DIR}/CMake")
@@ -41,11 +43,4 @@ find_package(imgui CONFIG REQUIRED)
 find_package(implot CONFIG REQUIRED)
 
 # link dependencies
-target_link_libraries(Points OpenGL::GL glfw imgui::imgui implot::implot glad::glad glm::glm)
-
-
-# "make run" target
-# add_custom_target(run
-#     COMMAND ${BIN_NAME}
-#     DEPENDS ${BIN_NAME}
-#   WORKING_DIRECTORY "${PROJECT_SOURCE_DIR}")
+target_link_libraries(oneWeekRt OpenGL::GL glfw imgui::imgui implot::implot glad::glad glm)
