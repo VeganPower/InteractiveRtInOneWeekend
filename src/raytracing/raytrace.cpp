@@ -9,6 +9,8 @@
 // along with this software. If not, see <http://creativecommons.org/publicdomain/zero/1.0/>.
 //==============================================================================================
 
+#include "../common.h"
+
 #include "rtweekend.h"
 
 #include "aarect.h"
@@ -113,10 +115,10 @@ hittable_list cornell_box() {
     auto light = make_shared<diffuse_light>(color(15, 15, 15));
 
     objects.add(make_shared<yz_rect>(0, 555, 0, 555, 555, green));
-    objects.add(make_shared<yz_rect>(0, 555, 0, 555, 0, red));
+    objects.add(make_shared<yz_rect>(0, 555, 0, 555, 0,   red));
     objects.add(make_shared<flip_face>(make_shared<xz_rect>(213, 343, 227, 332, 554, light)));
     objects.add(make_shared<xz_rect>(0, 555, 0, 555, 555, white));
-    objects.add(make_shared<xz_rect>(0, 555, 0, 555, 0, white));
+    objects.add(make_shared<xz_rect>(0, 555, 0, 555, 0,   white));
     objects.add(make_shared<xy_rect>(0, 555, 0, 555, 555, white));
 
     // shared_ptr<material> aluminum = make_shared<metal>(color(0.8, 0.85, 0.88), 0.2);
@@ -147,11 +149,9 @@ RtScene::RtScene()
     lights = make_shared<xz_rect>(213, 343, 227, 332, 554, shared_ptr<material>());
 
     world = cornell_box();
-    background = color(0,0,0);
+    background = color(0.02f,0.02f,0.02f);
 }
 
-thread_local std::random_device rd;
-thread_local std::mt19937 random_gen(rd());
 
 void check_nan(color& c)
 {
@@ -161,46 +161,49 @@ void check_nan(color& c)
     }
 }
 
+struct TileData
+{
+    Rectangle rect;
+    std::mt19937 random_gen;
+};
+
+
 void raytrace(Image& out_image, RtScene const& scene)
 {
     int image_width = (int)out_image.width;
     int image_height = (int)out_image.height;
 
+    std::random_device rd;
     // Render
     StopWatch sw("Render");
     int tile_size = 128;
-    std::vector<Rectangle> tiles;
+    std::vector<TileData> tiles;
     for (int j = 0; j < image_height; j += tile_size)
     {
         for (int i = 0; i < image_width; i += tile_size)
         {
             Rectangle rect { i, j, min_of(i + tile_size, image_width), min_of(j + tile_size, image_height) };
-            tiles.push_back(rect);
+            tiles.push_back( { rect, std::mt19937(rd()) });
         }
     }
 #ifdef NDEBUG
-    std::for_each(std::execution::par, tiles.begin(), tiles.end(), [&](Rectangle const& rect)
+    std::for_each(std::execution::par, tiles.begin(), tiles.end(), [&](TileData& tile)
 #else
-    std::for_each(tiles.begin(), tiles.end(), [&](Rectangle const& rect)
+    std::for_each(tiles.begin(), tiles.end(), [&](TileData& tile)
 #endif
     {
+        Rectangle const& rect = tile.rect;
         std::uniform_real_distribution<> random_dis(0.0, 1.0);
         for (int j = rect.y_start; j < rect.y_end; ++j)
         {
-            //std::cerr << "\rScanlines remaining: " << j << ' ' << std::flush;
             color* line = out_image.get_line(j);
             for (int i = rect.x_start; i < rect.x_end; ++i)
             {
-                // color pixel_color(0,0,0);
-                // for (int s = 0; s < scene.samples_per_pixel; ++s)
-                // {
-                    auto u = (i + random_dis(random_gen)) / (image_width-1);
-                    auto v = (j + random_dis(random_gen)) / (image_height-1);
-                    ray r = scene.cam.get_ray(u, 1.f - v, random_gen);
-                    color pixel_color = ray_color(r, scene.background, scene.world, scene.lights.get(), scene.max_depth, random_gen);
-                // }
-                    check_nan(pixel_color);
-
+                auto u = (i + random_dis(tile.random_gen)) / (image_width-1);
+                auto v = (j + random_dis(tile.random_gen)) / (image_height-1);
+                ray r = scene.cam.get_ray(u, v);
+                color pixel_color = ray_color(r, scene.background, scene.world, scene.lights.get(), scene.max_depth, tile.random_gen);
+                check_nan(pixel_color);
                 line[i] += pixel_color;
             }
         }

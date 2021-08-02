@@ -71,23 +71,8 @@ struct AppData
 
 void AppData::set_camera()
 {
-    int image_width = (int)display_size.width;
-    int image_height = (int)display_size.height;
-
-    float aspect_ratio =  (float)image_width / (float)image_height;
-    // Camera
-    point3 lookfrom(278, 278, -800);
-    point3 lookat(278, 278, 0);
-    vec3 vup(0, 1, 0);
-
-    auto dist_to_focus = 10.0;
-    auto aperture = 0.0;
-    auto vfov = 40.0;
-    auto time0 = 0.0;
-    auto time1 = 1.0;
-
-    scene.cam = ::camera(lookfrom, lookat, vup, vfov, aspect_ratio, aperture, dist_to_focus);
-
+    set(camera, arc_ctrl);
+    scene.cam = RtCamera(inverse(camera.projection_view()));
 }
 
 void AppData::update_camera()
@@ -95,6 +80,7 @@ void AppData::update_camera()
     glm::mat4 proj_matrix = compute_projection_matrix((float)display_size.width, (float)display_size.height,
         tanf(fov.radian() * 0.5f), near_plane, far_plane, reverse_z, infinite_proj);
     camera.projection(proj_matrix);
+    set_camera();
     if (reverse_z)
     {
         glClearDepth(0.f);
@@ -113,11 +99,18 @@ void AppData::reset_image()
     rt_intermediate.clear(color(0, 0, 0));
 }
 
+static double lin_to_sRGB(double x)
+{
+    double dark = x * 12.92;
+    double light = pow((x * 1.055), 1.0 / 2.4) - 0.055;
+    return x < 0.0031308 ? dark : light;
+}
+
 void convert(Image const& img, Texture & tx, double scale)
 {
     unsigned pixels_count = img.width * img.height;
     uint32_t* pixels = new uint32_t[pixels_count];
-    for (int i = 0; i < pixels_count; ++i)
+    for (unsigned i = 0; i < pixels_count; ++i)
     {
         auto r = img.pixels[i].x() * scale;
         auto g = img.pixels[i].y() * scale;
@@ -202,7 +195,6 @@ void fill_plot(AppData& app)
         // app.line1[i] = { x, 1.f / y1 };
         // app.line2[i] = { x, 1.f / y2 };
     // }
-
 }
 
 void init_gl_state(ImVec4 clear_color)
@@ -290,8 +282,11 @@ bool init(AppData& app)
     int w, h;
     glfwGetFramebufferSize(app.window, &w, &h);
     app.update_view_size(w, h);
+    app.arc_ctrl.focus = glm::vec3(250.f, 250.f, 250.f);
+    app.arc_ctrl.distance = 500.f;
 
     app.set_camera();
+
     fill_plot(app);
     app.offset = {0.f, 0.f};
     app.size = 35.f;
@@ -336,7 +331,7 @@ int main(int argc, char const** argv)
             if (app.arc_ctrl.update(ImGui::GetIO(), app.display_size))
             {
                 app.reset_image();
-                set(app.camera, app.arc_ctrl);
+                app.set_camera();
             }
         }
         //static bool demo_open;

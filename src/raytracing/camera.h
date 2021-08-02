@@ -13,53 +13,42 @@
 
 #include "rtweekend.h"
 
+class RtCamera {
+public:
+    RtCamera() = default;
 
-class camera {
-    public:
-        camera() : camera(point3(0,0,-1), point3(0,0,0), vec3(0,1,0), 40, 1, 0, 10) {}
+    RtCamera(glm::mat4 const& proj_view_inv)
+    {
+        glm::vec4 o = proj_view_inv * glm::vec4( 0.0,  0.0, -1.0, 1.0);
+        glm::vec4 c = proj_view_inv * glm::vec4(-1.0, -1.0,  0.0, 1.0);
+        glm::vec4 x = proj_view_inv * glm::vec4( 1.0, -1.0,  0.0, 1.0);
+        glm::vec4 y = proj_view_inv * glm::vec4(-1.0,  1.0,  0.0, 1.0);
+        o = o / o[3];
+        c = c / c[3];
+        x = x / x[3];
+        y = y / y[3];
+        glm::vec4 h = x - c;
+        glm::vec4 v = y - c;
 
-        camera(
-            point3 lookfrom,
-            point3 lookat,
-            vec3   vup,
-            double vfov, // vertical field-of-view in degrees
-            double aspect_ratio,
-            double aperture,
-            double focus_dist
-        ) {
-            auto theta = degrees_to_radians(vfov);
-            auto h = tan(theta/2);
-            auto viewport_height = 2.0 * h;
-            auto viewport_width = aspect_ratio * viewport_height;
+        origin     = vec3(o[0], o[1], o[2]);
+        lower_left_corner = vec3(c[0], c[1], c[2]);
+        horizontal = vec3(h[0], h[1], h[2]);
+        vertical   = vec3(v[0], v[1], v[2]);
+    }
 
-            w = unit_vector(lookfrom - lookat);
-            u = unit_vector(cross(vup, w));
-            v = cross(w, u);
 
-            origin = lookfrom;
-            horizontal = focus_dist * viewport_width * u;
-            vertical = focus_dist * viewport_height * v;
-            lower_left_corner = origin - horizontal/2 - vertical/2 - focus_dist*w;
+    ray get_ray(double s, double t) const {
+        return ray(
+            origin,
+            lower_left_corner + s*horizontal + t*vertical - origin
+        );
+    }
 
-            lens_radius = aperture / 2;
-        }
-
-        ray get_ray(double s, double t, std::mt19937& random_gen) const {
-            vec3 rd = lens_radius * random_in_unit_disk(random_gen);
-            vec3 offset = u * rd.x() + v * rd.y();
-            return ray(
-                origin + offset,
-                lower_left_corner + s*horizontal + t*vertical - origin - offset
-            );
-        }
-
-    private:
-        point3 origin;
-        point3 lower_left_corner;
-        vec3 horizontal;
-        vec3 vertical;
-        vec3 u, v, w;
-        double lens_radius;
+private:
+    point3 origin;
+    point3 lower_left_corner;
+    vec3 horizontal;
+    vec3 vertical;
 };
 
 #endif

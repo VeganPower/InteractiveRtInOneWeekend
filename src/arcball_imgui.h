@@ -6,9 +6,9 @@ class Camera;
 
 struct ArcBall
 {
-    float distance = 5.f;
-    Angle phi = { Angle::Degree(0.f) } ;
-    Angle theta = { Angle::Degree(45.f) };
+    float distance = 500.f;
+    Angle phi = { Angle::Degree(180.f) } ;
+    Angle theta = { Angle::Degree(15.f) };
 
     Angle start_phi { 0.f };
     Angle start_theta { 0.f };
