@@ -247,7 +247,7 @@ void cornell_box(RtScene& scene)
     auto box1 = make_shared<box>(point3(165,330,165), aluminum);
     box1->transform(vec3(347.5f, 165.f, 377.5f), Mat3::rotation_y(Angle::Degree(15.f)));
     objects.add(box1);
-    auto sphere = make_shared<Sphere>(point3(0, 0, 0), 90.f, glass);
+    auto sphere = make_shared<Sphere>(90.f, glass);
     sphere->translate(point3(190, 90, 190));
     objects.add(sphere);
     scene.world  = objects;

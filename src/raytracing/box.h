@@ -23,12 +23,12 @@ public:
 
     virtual bool hit_priv(const ray& r, Real t_min, Real t_max, hit_record& rec) const override;
 
-    // virtual bool bounding_box(aabb& output_box) const override {
-    //     output_box = aabb(box_min, box_max);
-    //     return true;
-    // }
-
+    virtual aabb local_bounding_box() const override
+    {
+        vec3 h_size = size * 0.5f;
+        return aabb(-h_size, h_size);
+    }
 private:
-    point3 size;
+    vec3 size;
     SubPlane sides[6];
 };

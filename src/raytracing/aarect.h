@@ -38,6 +38,10 @@ public:
 
     virtual Real pdf_value(const point3& origin, const vec3& v) const override;
     virtual vec3 random(const point3& origin, std::mt19937& random_gen) const override;
+    virtual aabb local_bounding_box() const override
+    {
+        return aabb(point3(rect.x0, rect.y0, Real{-0.0001}), point3(rect.x1, rect.y1, Real{0.0001}));
+    }
 
 private:
     virtual bool hit_priv(const ray& r, Real t_min, Real t_max, hit_record& rec) const override;

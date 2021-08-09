@@ -62,7 +62,7 @@ inline vec3 random_GGX(Real roughness, std::mt19937& random_gen)
 inline Real GGD_d(Real a, Real NoH)
 {
     Real a2 = a * a;
-    Real k = NoH * NoH * (a2- 1.0) + 1.0;
+    Real k = NoH * NoH * (a2- Real{1.0}) + Real{ 1.0 };
     return a2 / (pi * k * k);
 }
 /*

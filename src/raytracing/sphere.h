@@ -21,15 +21,19 @@ class Sphere : public hittable {
 public:
     Sphere() = default;
 
-    Sphere(point3 cen, Real r, shared_ptr<Material> m)
-        : center(cen), radius(r), mat_ptr(m)
+    Sphere(Real r, shared_ptr<Material> m)
+        : radius(r)
+        , mat_ptr(m)
     {
-        //bound = aabb(
-        //    center - vec3(radius, radius, radius),
-        //    center + vec3(radius, radius, radius)
-        //);
-    };
+    }
 
+    virtual aabb local_bounding_box() const override
+    {
+        return aabb(
+           vec3(radius, radius, radius),
+           vec3(radius, radius, radius)
+        );
+    }
     virtual bool hit_priv(const ray& r, Real t_min, Real t_max, hit_record& rec) const override;
 
     virtual Real pdf_value(const point3& o, const vec3& v) const override;
@@ -78,7 +82,7 @@ vec3 Sphere::random(const point3& o, std::mt19937& random_gen) const {
 
 
 bool Sphere::hit_priv(const ray& r, Real t_min, Real t_max, hit_record& rec) const {
-    vec3 oc = r.origin() - center;
+    vec3 oc = r.origin();
     auto a = r.direction().length_squared();
     auto half_b = dot(oc, r.direction());
     auto c = oc.length_squared() - radius*radius;
@@ -97,7 +101,7 @@ bool Sphere::hit_priv(const ray& r, Real t_min, Real t_max, hit_record& rec) con
 
     rec.t = root;
     rec.p = r.at(rec.t);
-    vec3 outward_normal = (rec.p - center) / radius;
+    vec3 outward_normal = rec.p / radius;
     rec.set_face_normal(r, outward_normal);
     get_sphere_uv(outward_normal, rec.u, rec.v);
     rec.mat_ptr = mat_ptr.get();

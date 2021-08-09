@@ -19,7 +19,7 @@
 #include <cassert>
 
 
-class hittable_list : public hittable  {
+class hittable_list {
     public:
         hittable_list() {}
         hittable_list(shared_ptr<hittable> object) { add(object); }
@@ -27,17 +27,17 @@ class hittable_list : public hittable  {
         void clear() { objects.clear(); }
         void add(shared_ptr<hittable> object) { objects.push_back(object); }
 
-        virtual bool hit_priv(const ray& r, Real t_min, Real t_max, hit_record& rec) const override;
+        bool hit(const ray& r, Real t_min, Real t_max, hit_record& rec) const;
 
-        virtual Real pdf_value(const vec3 &o, const vec3 &v) const override;
-        virtual vec3 random(const vec3 &o, std::mt19937& random_gen) const override;
+        // virtual Real pdf_value(const vec3 &o, const vec3 &v) const override;
+        // virtual vec3 random(const vec3 &o, std::mt19937& random_gen) const override;
 
     public:
         std::vector<shared_ptr<hittable>> objects;
         std::vector<aabb> bounds;
 };
 
-inline bool hittable_list::hit_priv(const ray& r, Real t_min, Real t_max, hit_record& rec) const {
+inline bool hittable_list::hit(const ray& r, Real t_min, Real t_max, hit_record& rec) const {
     hit_record temp_rec;
     auto hit_anything = false;
     auto closest_so_far = t_max;
@@ -63,22 +63,22 @@ inline bool hittable_list::hit_priv(const ray& r, Real t_min, Real t_max, hit_re
 //     }
 //     return true;
 // }
-
-inline Real hittable_list::pdf_value(const point3& o, const vec3& v) const {
-    auto weight = Real{1.0}/objects.size();
-    auto sum = Real{0.0};
-
-    for (const auto& object : objects)
-        sum += weight * object->pdf_value(o, v);
-
-    return sum;
-}
-
-inline vec3 hittable_list::random(const vec3 &o, std::mt19937& random_gen) const {
-    auto int_size = static_cast<int>(objects.size());
-    std::uniform_int_distribution<> uniform(0, int_size-1);
-    int idx = uniform(random_gen);
-    assert(idx >= 0 && idx < int_size);
-    return objects[idx]->random(o, random_gen);
-}
+//
+// inline Real hittable_list::pdf_value(const point3& o, const vec3& v) const {
+//     auto weight = Real{1.0}/objects.size();
+//     auto sum = Real{0.0};
+//
+//     for (const auto& object : objects)
+//         sum += weight * object->pdf_value(o, v);
+//
+//     return sum;
+// }
+//
+// inline vec3 hittable_list::random(const vec3 &o, std::mt19937& random_gen) const {
+//     auto int_size = static_cast<int>(objects.size());
+//     std::uniform_int_distribution<> uniform(0, int_size-1);
+//     int idx = uniform(random_gen);
+//     assert(idx >= 0 && idx < int_size);
+//     return objects[idx]->random(o, random_gen);
+// }
 

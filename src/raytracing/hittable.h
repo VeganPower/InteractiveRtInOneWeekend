@@ -45,14 +45,7 @@ struct hittable
         translation_inv = vec3::zero();
     }
 
-    aabb bounding_box() const
-    {
-        aabb ret{};
-
-        // output_box = bound;
-        return ret;
-    }
-
+    virtual aabb local_bounding_box() const = 0;
     virtual Real pdf_value(const vec3& o, const vec3& v) const {
         return 0.0;
     }
@@ -63,17 +56,23 @@ struct hittable
 
     hittable& translate(point3 const& T)
     {
-        translation_inv = -T * rotation_inv;
+        translation = T;
+        translation_inv = -translation * rotation_inv;
         return *this;
     }
 
     hittable& transform(point3 const& T, Mat3 const& R)
     {
-        translation = T;
-        rotation = R;
-        rotation_inv = transpose(R);
-        translation_inv = -T * rotation_inv;
+        translation += T;
+        rotation = rotation * R;
+        rotation_inv = transpose(rotation);
+        translation_inv = -translation * rotation_inv;
         return *this;
+    }
+
+    vec3 local_to_world(vec3 const& x)
+    {
+        return x * rotation + translation;
     }
 
     bool hit(const ray& r, Real t_min, Real t_max, hit_record& rec) const

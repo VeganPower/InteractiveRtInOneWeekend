@@ -29,7 +29,7 @@
 color ray_color(
     const ray& r,
     const color& background,
-    const hittable& world,
+    const hittable_list& world,
     hittable const* lights,
     int depth,
     std::mt19937& random_gen
