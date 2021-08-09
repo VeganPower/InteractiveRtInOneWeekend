@@ -48,18 +48,24 @@ bool ArcBall::update(ImGuiIO const& io, Dimension const& size)
     return true;
 }
 
+glm::vec3 ArcBall::eye_pos() const
+{
+    const float sp = sinf(phi.radian());
+    const float cp = cosf(phi.radian());
+    const float st = sinf(theta.radian());
+    const float ct = cosf(theta.radian());
+
+    const float d = ct * distance;
+    const float y = st * distance;
+    const float x = cp * d;
+    const float z = sp * d;
+    return glm::vec3(x, y, z) + focus;
+}
+
 void set(Camera& c, ArcBall const& a)
 {
-    float sp = sinf(a.phi.radian());
-    float cp = cosf(a.phi.radian());
-    float st = sinf(a.theta.radian());
-    float ct = cosf(a.theta.radian());
-
-    float x = sp * ct * a.distance;
-    float y = st * a.distance;
-    float z = cp * ct * a.distance;
-    const glm::vec3 eye(x, y, z);
     const glm::vec3 k_up(0.f, 1.f, 0.f);
+    const glm::vec3 eye = a.eye_pos();
 
     glm::vec3 V_z = glm::normalize(a.focus - eye);
     glm::vec3 V_x = glm::normalize(cross(k_up, V_z));

@@ -7,10 +7,10 @@
 
 struct RtScene
 {
-
     RtScene();
     hittable_list world;
     std::shared_ptr<xz_rect> lights;
+    std::vector<Material> Materials;
     color background;
     RtCamera cam;
 

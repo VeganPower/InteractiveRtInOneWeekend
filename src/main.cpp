@@ -18,8 +18,9 @@
 #include "camera.h"
 #include "raytracing/raytrace.h"
 #include "raytracing/camera.h"
-
-//using namespace glm;
+#include "raytracing/sphere.h"
+#include "raytracing/box.h"
+#include "raytracing/Material.h"
 
 struct AppData
 {
@@ -49,7 +50,7 @@ struct AppData
 
     ArcBall arc_ctrl;
     Camera camera;
-    Angle fov = Angle::Degree(33.f);
+    Angle fov = Angle::Degree(45.f);
     float near_plane = 0.05f;
     float far_plane = 50.0f;
     bool reverse_z = false;
@@ -72,7 +73,7 @@ struct AppData
 void AppData::set_camera()
 {
     set(camera, arc_ctrl);
-    scene.cam = RtCamera(inverse(camera.projection_view()));
+    scene.cam = RtCamera(arc_ctrl.eye_pos(), inverse(camera.projection_view()));
 }
 
 void AppData::update_camera()
@@ -206,6 +207,37 @@ void init_gl_state(ImVec4 clear_color)
     glClearColor(clear_color.x, clear_color.y, clear_color.z, clear_color.w);
 }
 
+void cornell_box(RtScene& scene)
+{
+    hittable_list objects;
+
+    auto red      = make_shared<lambertian>(color(.65, .05, .05));
+    auto white    = make_shared<lambertian>(color(.73, .73, .73));
+    auto green    = make_shared<lambertian>(color(.12, .45, .15));
+    auto light    = make_shared<diffuse_light>(color(15, 15, 15));
+    auto aluminum = make_shared<lambertian>(color(0.8, 0.85, 0.88));
+
+    objects.add(make_shared<yz_rect>(0, 555, 0, 555, 555, green));
+    objects.add(make_shared<yz_rect>(0, 555, 0, 555, 0,   red));
+    objects.add(make_shared<flip_face>(make_shared<xz_rect>(213, 343, 227, 332, 554, light)));
+    objects.add(make_shared<xz_rect>(0, 555, 0, 555, 555, white));
+    objects.add(make_shared<xz_rect>(0, 555, 0, 555, 0,   white));
+    objects.add(make_shared<xy_rect>(0, 555, 0, 555, 555, white));
+
+    // shared_ptr<Material> aluminum = make_shared<metal>(color(0.8, 0.85, 0.88), 0.2);
+    shared_ptr<hittable> box1 = make_shared<box>(point3(0,0,0), point3(165,330,165), aluminum);
+    box1 = make_shared<rotate_y>(box1, 15);
+    box1 = make_shared<translate>(box1, vec3(265,0,295));
+    objects.add(box1);
+
+    auto glass = make_shared<lambertian>(color(0.8, 0.8, 0.8));
+    // auto glass = make_shared<dielectric>(1.5);
+    objects.add(make_shared<sphere>(point3(190,90,190), 90 , glass));
+    scene.world = objects;
+    scene.lights = make_shared<xz_rect>(213, 343, 227, 332, 554, shared_ptr<Material>());
+
+}
+
 bool init(AppData& app)
 {
     if (!glfwInit())
@@ -217,7 +249,7 @@ bool init(AppData& app)
     glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE);
     glfwWindowHint(GLFW_OPENGL_DEBUG_CONTEXT, GLFW_TRUE);
     glfwWindowHint(GLFW_SAMPLES, 4);
-    app.window = glfwCreateWindow(640, 480, "Hmd simulator", NULL, NULL);
+    app.window = glfwCreateWindow(640, 640, "Hmd simulator", NULL, NULL);
     if (app.window == nullptr)
     {
         fprintf(stderr, "Failed to create window!\n");
@@ -269,27 +301,20 @@ bool init(AppData& app)
 
     app.points = make_points();
     app.ball_circle = make_circle(0.9f, 128, 0xefece9);
-    // ImU32 odd_circle  = 0x575049;
-    // ImU32 even_circle = 0x403a34;
-    //for (uint i = 1; i < 8; ++i)
-    //{
-    //    f32 alpha = i * 10.f * k_pi / 180.f;
-    //    f32 r = eye_relief * tanf(alpha);
-    //    app.lens_circle[i] = make_circle(r, 128, (i & 1) ? odd_circle : even_circle);
-    //}
-//    app.update_view_size()
 
     int w, h;
     glfwGetFramebufferSize(app.window, &w, &h);
     app.update_view_size(w, h);
-    app.arc_ctrl.focus = glm::vec3(250.f, 250.f, 250.f);
-    app.arc_ctrl.distance = 500.f;
+    app.arc_ctrl.focus = glm::vec3(277.5f, 277.5f, 277.5f);
+    app.arc_ctrl.distance = 950.f;
 
     app.set_camera();
 
     fill_plot(app);
     app.offset = {0.f, 0.f};
     app.size = 35.f;
+
+    cornell_box(app.scene);
     return true;
 }
 
@@ -376,6 +401,7 @@ int main(int argc, char const** argv)
                     app.fov = Angle::Radian(fov);
                     app.update_camera();
                 }
+                if (ImGui::SliderFloat("distance", &app.arc_ctrl.distance, 1.f, 1000.0f)) app.update_camera();
                 if (ImGui::DragFloatRange2("Clip planes", &app.near_plane, &app.far_plane, 0.25f, 0.001f, 1000.f)) app.update_camera();
                 if (ImGui::Checkbox("Reverse z", &app.reverse_z))    app.update_camera();
                 if (ImGui::Checkbox("infinite proj", &app.infinite_proj)) app.update_camera();

@@ -1,5 +1,5 @@
-#ifndef MATERIAL_H
-#define MATERIAL_H
+#ifndef Material_H
+#define Material_H
 //==============================================================================================
 // Originally written in 2016 by Peter Shirley <ptrshrl@gmail.com>
 //
@@ -25,7 +25,7 @@ struct scatter_record
     shared_ptr<pdf> pdf_ptr;
 };
 
-struct material
+struct Material
 {
     virtual color emitted(const ray& r_in, const hit_record& rec, double u, double v, const point3& p) const
     {
@@ -45,7 +45,7 @@ struct material
     }
 };
 
-class lambertian : public material
+class lambertian : public Material
 {
 public:
     lambertian(const color& a) : albedo(make_solid_color(a)) {}
@@ -73,7 +73,7 @@ public:
     texture albedo;
 };
 /*
-class metal : public material
+class metal : public Material
 {
 public:
     metal(const color& a, double f) : albedo(a), fuzz(f < 1 ? f : 1) {}
@@ -97,7 +97,7 @@ public:
 };
 
 
-class dielectric : public material
+class dielectric : public Material
 {
 public:
     dielectric(double index_of_refraction) : ir(index_of_refraction) {}
@@ -142,7 +142,7 @@ private:
 };
 */
 
-class GGX : public material
+class GGX : public Material
 {
 public:
     GGX(texture const& a, double r, double m)
@@ -173,7 +173,7 @@ public:
 };
 
 
-class diffuse_light : public material
+class diffuse_light : public Material
 {
 public:
     diffuse_light(texture const& a) : emit(a) {}
@@ -193,14 +193,14 @@ public:
 };
 
 /*
-class isotropic : public material {
+class isotropic : public Material {
     public:
         isotropic(color c) : albedo(make_solid_color(c)) {}
         isotropic(texture const& a) : albedo(a) {}
 
         #if 0
         // Issue #669
-        // This method doesn't match the signature in the base `material` class, so this one's
+        // This method doesn't match the signature in the base `Material` class, so this one's
         // never actually called. Disabling this definition until we sort this out.
 
         virtual bool scatter(

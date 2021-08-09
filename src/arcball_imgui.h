@@ -7,8 +7,8 @@ class Camera;
 struct ArcBall
 {
     float distance = 500.f;
-    Angle phi = { Angle::Degree(180.f) } ;
-    Angle theta = { Angle::Degree(15.f) };
+    Angle phi = { Angle::Degree(-90.f) } ;
+    Angle theta = { Angle::Degree(0.f) };
 
     Angle start_phi { 0.f };
     Angle start_theta { 0.f };
@@ -17,6 +17,7 @@ struct ArcBall
     glm::vec3 focus { 0.f };
 
     bool update(ImGuiIO const& io, Dimension const& size);
+    glm::vec3 eye_pos() const;
 };
 
 void set(Camera& c, ArcBall const& a);

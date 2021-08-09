@@ -15,13 +15,13 @@
 
 #include "aabb.h"
 
-struct material;
+struct Material;
 
 struct hit_record
 {
     point3 p;
     vec3 normal;
-    material const* mat_ptr;
+    Material const* mat_ptr;
     double t;
     double u;
     double v;

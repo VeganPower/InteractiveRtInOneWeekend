@@ -17,8 +17,7 @@
 #include "box.h"
 #include "camera.h"
 
-#include "material.h"
-#include "sphere.h"
+#include "Material.h"
 #include "stopwatch.h"
 
 #include "raytrace.h"
@@ -64,15 +63,15 @@ color ray_color(
     double pdf_val = 1.f;
     {
         // Lambertian only
-        const cosine_pdf material_pdf = cosine_pdf(rec.normal);
-        const vec3 material_ray = material_pdf.generate(random_gen);
-        const double mat_pdf_val0 = material_pdf.value(material_ray);
-        const double mat_pdf_val1 = light_pdf.value(material_ray);
+        const cosine_pdf Material_pdf = cosine_pdf(rec.normal);
+        const vec3 Material_ray = Material_pdf.generate(random_gen);
+        const double mat_pdf_val0 = Material_pdf.value(Material_ray);
+        const double mat_pdf_val1 = light_pdf.value(Material_ray);
         const double weight_mat = mat_pdf_val0 / (mat_pdf_val0 + mat_pdf_val1);
 
         const vec3 light_ray       = unit_vector(light_pdf.generate(random_gen));
         const double light_pdf_val0 = light_pdf.value(light_ray);
-        const double light_pdf_val1 = material_pdf.value(light_ray);
+        const double light_pdf_val1 = Material_pdf.value(light_ray);
         const double weight_light = light_pdf_val0 / (light_pdf_val0 + light_pdf_val1);
 
         const double total = weight_mat + weight_light;
@@ -86,11 +85,11 @@ color ray_color(
         }
         else
         {
-            // Choose material pdf
-            ray_dir = material_ray;
+            // Choose Material pdf
+            ray_dir = Material_ray;
             pdf_val = total / mat_pdf_val0;
         }
-        //const double mat_pdf_val   = material_pdf.value(ray_dir);
+        //const double mat_pdf_val   = Material_pdf.value(ray_dir);
         //const double light_pdf_val = light_pdf.value(ray_dir);
         //pdf_val = 2.f / (mat_pdf_val + light_pdf_val);
     }
@@ -106,36 +105,6 @@ color ray_color(
 }
 
 
-hittable_list cornell_box()
-{
-    hittable_list objects;
-
-    auto red   = make_shared<lambertian>(color(.65, .05, .05));
-    auto white = make_shared<lambertian>(color(.73, .73, .73));
-    auto green = make_shared<lambertian>(color(.12, .45, .15));
-    auto light = make_shared<diffuse_light>(color(15, 15, 15));
-
-    objects.add(make_shared<yz_rect>(0, 555, 0, 555, 555, green));
-    objects.add(make_shared<yz_rect>(0, 555, 0, 555, 0,   red));
-    objects.add(make_shared<flip_face>(make_shared<xz_rect>(213, 343, 227, 332, 554, light)));
-    objects.add(make_shared<xz_rect>(0, 555, 0, 555, 555, white));
-    objects.add(make_shared<xz_rect>(0, 555, 0, 555, 0,   white));
-    objects.add(make_shared<xy_rect>(0, 555, 0, 555, 555, white));
-
-    // shared_ptr<material> aluminum = make_shared<metal>(color(0.8, 0.85, 0.88), 0.2);
-    shared_ptr<material> aluminum = make_shared<lambertian>(color(0.8, 0.85, 0.88));
-    shared_ptr<hittable> box1 = make_shared<box>(point3(0,0,0), point3(165,330,165), aluminum);
-    box1 = make_shared<rotate_y>(box1, 15);
-    box1 = make_shared<translate>(box1, vec3(265,0,295));
-    objects.add(box1);
-
-    auto glass = make_shared<lambertian>(color(0.8, 0.8, 0.8));
-    // auto glass = make_shared<dielectric>(1.5);
-    objects.add(make_shared<sphere>(point3(190,90,190), 90 , glass));
-
-    return objects;
-}
-
 struct Rectangle
 {
     int x_start, y_start;
@@ -145,11 +114,8 @@ struct Rectangle
 RtScene::RtScene()
 {
     //auto lights = make_shared<hittable_list>();
-    //lights->add(make_shared<xz_rect>(213, 343, 227, 332, 554, shared_ptr<material>()));
-    //lights->add(make_shared<sphere>(point3(190, 90, 190), 90, shared_ptr<material>()));
-    lights = make_shared<xz_rect>(213, 343, 227, 332, 554, shared_ptr<material>());
-
-    world = cornell_box();
+    //lights->add(make_shared<xz_rect>(213, 343, 227, 332, 554, shared_ptr<Material>()));
+    //lights->add(make_shared<sphere>(point3(190, 90, 190), 90, shared_ptr<Material>()));
     background = color(0.02f,0.02f,0.02f);
 }
 

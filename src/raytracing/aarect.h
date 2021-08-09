@@ -19,7 +19,7 @@ class xy_rect : public hittable {
         xy_rect() {}
 
         xy_rect(
-            double _x0, double _x1, double _y0, double _y1, double _k, shared_ptr<material> mat
+            double _x0, double _x1, double _y0, double _y1, double _k, shared_ptr<Material> mat
         ) : x0(_x0), x1(_x1), y0(_y0), y1(_y1), k(_k), mp(mat) {};
 
         virtual bool hit(const ray& r, double t_min, double t_max, hit_record& rec) const override;
@@ -32,7 +32,7 @@ class xy_rect : public hittable {
         }
 
     public:
-        shared_ptr<material> mp;
+        shared_ptr<Material> mp;
         double x0, x1, y0, y1, k;
 };
 
@@ -41,7 +41,7 @@ class xz_rect : public hittable {
         xz_rect() {}
 
         xz_rect(
-            double _x0, double _x1, double _z0, double _z1, double _k, shared_ptr<material> mat
+            double _x0, double _x1, double _z0, double _z1, double _k, shared_ptr<Material> mat
         ) : x0(_x0), x1(_x1), z0(_z0), z1(_z1), k(_k), mp(mat) {};
 
         virtual bool hit(const ray& r, double t_min, double t_max, hit_record& rec) const override;
@@ -74,7 +74,7 @@ class xz_rect : public hittable {
         }
 
     public:
-        shared_ptr<material> mp;
+        shared_ptr<Material> mp;
         double x0, x1, z0, z1, k;
 };
 
@@ -83,7 +83,7 @@ class yz_rect : public hittable {
         yz_rect() {}
 
         yz_rect(
-            double _y0, double _y1, double _z0, double _z1, double _k, shared_ptr<material> mat
+            double _y0, double _y1, double _z0, double _z1, double _k, shared_ptr<Material> mat
         ) : y0(_y0), y1(_y1), z0(_z0), z1(_z1), k(_k), mp(mat) {};
 
         virtual bool hit(const ray& r, double t_min, double t_max, hit_record& rec) const override;
@@ -96,7 +96,7 @@ class yz_rect : public hittable {
         }
 
     public:
-        shared_ptr<material> mp;
+        shared_ptr<Material> mp;
         double y0, y1, z0, z1, k;
 };
 
