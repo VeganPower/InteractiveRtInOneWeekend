@@ -19,7 +19,9 @@ struct ray {
     ray(const point3& origin, const vec3& direction)
         : orig(origin)
         , dir(direction)
-    {}
+    {
+        inv_dir = vec3{1.f / dir.x(), 1.f / dir.y(), 1.f / dir.z()};
+    }
 
     point3 origin() const  { return orig; }
     vec3 direction() const { return dir; }
@@ -27,6 +29,7 @@ struct ray {
 
     point3 orig;
     vec3 dir;
+    vec3 inv_dir;
 };
 
 #endif

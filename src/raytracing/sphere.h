@@ -30,7 +30,7 @@ public:
     virtual aabb local_bounding_box() const override
     {
         return aabb(
-           vec3(radius, radius, radius),
+           -vec3(radius, radius, radius),
            vec3(radius, radius, radius)
         );
     }

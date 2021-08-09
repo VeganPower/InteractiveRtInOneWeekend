@@ -135,6 +135,7 @@ void convert(Image const& img, Texture & tx, double scale)
 void AppData::rt_render()
 {
     if (pause) return;
+    scene.world.update_bounds();
     raytrace(rt_intermediate, scene);
     scene.samples_per_pixel++;
     if (scene.samples_per_pixel > 0)

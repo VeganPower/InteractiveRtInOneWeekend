@@ -29,6 +29,7 @@ class hittable_list {
 
         bool hit(const ray& r, Real t_min, Real t_max, hit_record& rec) const;
 
+        void update_bounds();
         // virtual Real pdf_value(const vec3 &o, const vec3 &v) const override;
         // virtual vec3 random(const vec3 &o, std::mt19937& random_gen) const override;
 
@@ -42,14 +43,39 @@ inline bool hittable_list::hit(const ray& r, Real t_min, Real t_max, hit_record&
     auto hit_anything = false;
     auto closest_so_far = t_max;
 
-    for (const auto& object : objects) {
-        if (object->hit(r, t_min, closest_so_far, temp_rec)) {
+    for (size_t i = 0 ; i < objects.size(); ++i)
+    {
+        const auto& object = objects[i];
+        if (bounds[i].hit(r, t_min, t_max) && object->hit(r, t_min, closest_so_far, temp_rec))
+        // if (object->hit(r, t_min, closest_so_far, temp_rec))
+        {
             hit_anything = true;
             closest_so_far = temp_rec.t;
             rec = temp_rec;
         }
     }
     return hit_anything;
+}
+
+inline void hittable_list::update_bounds()
+{
+    bounds.clear();
+    for (const auto& obj : objects)
+    {
+        aabb bound = obj->local_bounding_box();
+        vec3 low = obj->local_to_world(bound.min());
+        vec3 high = low;
+        vec3 p;
+        p = obj->local_to_world(vec3(bound.min().x(), bound.min().z(), bound.max().z())); low = elem_min(low, p); high = elem_max(high, p);
+        p = obj->local_to_world(vec3(bound.min().x(), bound.max().z(), bound.min().z())); low = elem_min(low, p); high = elem_max(high, p);
+        p = obj->local_to_world(vec3(bound.min().x(), bound.max().z(), bound.max().z())); low = elem_min(low, p); high = elem_max(high, p);
+        p = obj->local_to_world(vec3(bound.max().x(), bound.min().z(), bound.min().z())); low = elem_min(low, p); high = elem_max(high, p);
+        p = obj->local_to_world(vec3(bound.max().x(), bound.min().z(), bound.max().z())); low = elem_min(low, p); high = elem_max(high, p);
+        p = obj->local_to_world(vec3(bound.max().x(), bound.max().z(), bound.min().z())); low = elem_min(low, p); high = elem_max(high, p);
+        p = obj->local_to_world(bound.max());                                             low = elem_min(low, p); high = elem_max(high, p);
+
+        bounds.push_back(aabb { low, high });
+    }
 }
 
 // inline bool hittable_list::bounding_box(aabb& output_box) const {

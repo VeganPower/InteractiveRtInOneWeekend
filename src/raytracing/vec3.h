@@ -57,6 +57,14 @@ struct vec3
         return e[0]*e[0] + e[1]*e[1] + e[2]*e[2];
     }
 
+    Real smallest_element() const {
+        return min_of(min_of(e[0], e[1]), e[2]);
+    }
+
+    Real biggest_element() const {
+        return min_of(min_of(e[0], e[1]), e[2]);
+    }
+
     bool near_zero() const {
         // Return true if the vector is close to zero in all dimensions.
         const auto s = 1e-8;
@@ -117,6 +125,20 @@ inline vec3 elem_product(const vec3 &u, const vec3 &v) {
     return vec3(u.e[0] * v.e[0],
                 u.e[1] * v.e[1],
                 u.e[2] * v.e[2]);
+}
+
+inline vec3 elem_min(const vec3 &u, const vec3 &v)
+{
+    vec3 res;
+    for (int i = 0; i < 3; ++i) res.e[i] = min_of(u.e[i], v.e[i]);
+    return res;
+}
+
+inline vec3 elem_max(const vec3 &u, const vec3 &v)
+{
+    vec3 res;
+    for (int i = 0; i < 3; ++i) res.e[i] = max_of(u.e[i], v.e[i]);
+    return res;
 }
 
 inline Real dot(const vec3 &u, const vec3 &v) {
