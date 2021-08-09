@@ -35,7 +35,7 @@ public:
         vertical          = vec3(v[0], v[1], v[2]);
     }
 
-    ray get_ray(double s, double t) const {
+    ray get_ray(Real s, Real t) const {
         return ray(
             origin,
             unit_vector(lower_left_corner + s*horizontal + t*vertical - origin)

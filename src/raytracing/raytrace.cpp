@@ -105,7 +105,7 @@ color ray_color(
 }
 
 
-struct Rectangle
+struct IntRectangle
 {
     int x_start, y_start;
     int x_end, y_end;
@@ -130,7 +130,7 @@ void check_nan(color& c)
 
 struct TileData
 {
-    Rectangle rect;
+    IntRectangle rect;
     std::mt19937 random_gen;
 };
 
@@ -149,7 +149,7 @@ void raytrace(Image& out_image, RtScene const& scene)
     {
         for (int i = 0; i < image_width; i += tile_size)
         {
-            Rectangle rect { i, j, min_of(i + tile_size, image_width), min_of(j + tile_size, image_height) };
+            IntRectangle rect { i, j, min_of(i + tile_size, image_width), min_of(j + tile_size, image_height) };
             tiles.push_back( { rect, std::mt19937(rd()) });
         }
     }
@@ -159,7 +159,7 @@ void raytrace(Image& out_image, RtScene const& scene)
     std::for_each(tiles.begin(), tiles.end(), [&](TileData& tile)
 #endif
     {
-        Rectangle const& rect = tile.rect;
+        IntRectangle const& rect = tile.rect;
         std::uniform_real_distribution<> random_dis(0.0, 1.0);
         for (int j = rect.y_start; j < rect.y_end; ++j)
         {

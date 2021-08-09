@@ -17,7 +17,7 @@
 
 
 inline vec3 random_cosine_direction(std::mt19937& random_gen) {
-    std::uniform_real_distribution<> uniform(0.0, 1.0);
+    std::uniform_real_distribution<Real> uniform(0.0, 1.0);
     auto r1 = uniform(random_gen);
     auto r2 = uniform(random_gen);
     auto z = sqrt(1-r2);
@@ -30,28 +30,28 @@ inline vec3 random_cosine_direction(std::mt19937& random_gen) {
 }
 
 
-inline vec3 random_to_sphere(double radius, double distance_squared, std::mt19937& random_gen) {
-    std::uniform_real_distribution<> uniform(0.0, 1.0);
-    const double r1 = uniform(random_gen);
-    const double r2 = uniform(random_gen);
-    const double z = 1 + r2*(sqrt(1-radius*radius/distance_squared) - 1);
+inline vec3 random_to_sphere(Real radius, Real distance_squared, std::mt19937& random_gen) {
+    std::uniform_real_distribution<Real> uniform(0.0, 1.0);
+    const Real r1 = uniform(random_gen);
+    const Real r2 = uniform(random_gen);
+    const Real z = 1 + r2*(sqrt(1-radius*radius/distance_squared) - 1);
 
-    const double phi = 2*pi*r1;
-    const double x = cos(phi)*sqrt(1-z*z);
-    const double y = sin(phi)*sqrt(1-z*z);
+    const Real phi = 2*pi*r1;
+    const Real x = cos(phi)*sqrt(1-z*z);
+    const Real y = sin(phi)*sqrt(1-z*z);
 
     return vec3(x, y, z);
 }
 
-inline vec3 random_GGX(double roughness, std::mt19937& random_gen)
+inline vec3 random_GGX(Real roughness, std::mt19937& random_gen)
 {
-    std::uniform_real_distribution<> uniform(0.0, 1.0);
-    const double r0 = uniform(random_gen);
-    const double r1 = uniform(random_gen);
-    const double a = roughness * roughness;
-    const double Phi = 2 * pi * r0;
-    const double cos_theta = sqrt( (1 - r1) / ( 1 + (a * a - 1) * r1 ) );
-    const double sin_theta = sqrt( 1 - cos_theta * cos_theta );
+    std::uniform_real_distribution<Real> uniform(0.0, 1.0);
+    const Real r0 = uniform(random_gen);
+    const Real r1 = uniform(random_gen);
+    const Real a = roughness * roughness;
+    const Real Phi = 2 * pi * r0;
+    const Real cos_theta = sqrt( (1 - r1) / ( 1 + (a * a - 1) * r1 ) );
+    const Real sin_theta = sqrt( 1 - cos_theta * cos_theta );
     vec3 H (sin_theta * cos(Phi),
             sin_theta * sin(Phi),
             cos_theta);
@@ -74,7 +74,7 @@ Real GGD_g(Real a, Real NoV, Real NoL)
 struct pdf  {
     virtual ~pdf() {}
 
-    virtual double value(const vec3& direction) const = 0;
+    virtual Real value(const vec3& direction) const = 0;
     virtual vec3 generate(std::mt19937& random_gen) const = 0;
 };
 
@@ -82,7 +82,7 @@ struct pdf  {
 struct cosine_pdf : public pdf {
     cosine_pdf(const vec3& w) { uvw.build_from_w(w); }
 
-    virtual double value(const vec3& direction) const override {
+    virtual Real value(const vec3& direction) const override {
         auto cosine = dot(unit_vector(direction), uvw.w());
         return (cosine <= 0) ? 0 : cosine/pi;
     }
@@ -104,14 +104,14 @@ struct GGX_pdf : public pdf
         local_space.build_from_w(normal);
     }
 
-    virtual double value(const vec3& direction) const override
+    virtual Real value(const vec3& direction) const override
     {
         // pdf = D * NoH / 4 * VoH
         vec3 H = unit_vector(normal + direction);
         Real NoH = dot(normal, H);
         Real VoH = dot(view, H);
         Real d = GGD_d(roughness * roughness, NoH);
-        return d * NoH / (4.0 * VoH);
+        return d * NoH / (Real{4} * VoH);
     }
 
     virtual vec3 generate(std::mt19937& r_gen) const override
@@ -130,7 +130,7 @@ struct GGX_pdf : public pdf
 struct hittable_pdf : public pdf {
     hittable_pdf(hittable const* p, const point3& origin) : ptr(p), o(origin) {}
 
-    virtual double value(const vec3& direction) const override {
+    virtual Real value(const vec3& direction) const override {
         return ptr->pdf_value(o, direction);
     }
 
@@ -149,7 +149,7 @@ struct mixture_pdf : public pdf {
     {
     }
 
-    virtual double value(const vec3& direction) const override {
+    virtual Real value(const vec3& direction) const override {
         return 0.5 * p[0]->value(direction) + 0.5 *p[1]->value(direction);
     }
 

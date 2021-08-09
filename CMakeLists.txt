@@ -28,7 +28,9 @@ target_sources(oneWeekRt PRIVATE
     src/raytracing/raytrace.cpp
     src/raytracing/aabb.h
     src/raytracing/aarect.h
+    src/raytracing/rect.cpp
     src/raytracing/box.h
+    src/raytracing/box.cpp
     src/raytracing/bvh.h
     src/raytracing/camera.h
     src/raytracing/hittable.h

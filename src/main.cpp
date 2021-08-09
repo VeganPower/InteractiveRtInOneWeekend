@@ -216,26 +216,42 @@ void cornell_box(RtScene& scene)
     auto green    = make_shared<lambertian>(color(.12, .45, .15));
     auto light    = make_shared<diffuse_light>(color(15, 15, 15));
     auto aluminum = make_shared<lambertian>(color(0.8, 0.85, 0.88));
+    auto glass    = make_shared<lambertian>(color(0.8, 0.8, 0.8));
+    auto standard = make_shared<Material>();
 
-    objects.add(make_shared<yz_rect>(0, 555, 0, 555, 555, green));
-    objects.add(make_shared<yz_rect>(0, 555, 0, 555, 0,   red));
-    objects.add(make_shared<flip_face>(make_shared<xz_rect>(213, 343, 227, 332, 554, light)));
-    objects.add(make_shared<xz_rect>(0, 555, 0, 555, 555, white));
-    objects.add(make_shared<xz_rect>(0, 555, 0, 555, 0,   white));
-    objects.add(make_shared<xy_rect>(0, 555, 0, 555, 555, white));
 
-    // shared_ptr<Material> aluminum = make_shared<metal>(color(0.8, 0.85, 0.88), 0.2);
-    shared_ptr<hittable> box1 = make_shared<box>(point3(0,0,0), point3(165,330,165), aluminum);
-    box1 = make_shared<rotate_y>(box1, 15);
-    box1 = make_shared<translate>(box1, vec3(265,0,295));
+    Rectangle r0 = { -277.5f, 277.5f, -277.5f, 277.5f };
+    // objects.add(make_shared<SubPlane>(r0, Plane{ vec3::x_axis(),-555.f}, vec3::z_axis(), green));
+    auto wall0 = make_shared<SubPlane>(r0, green);
+    auto wall1 = make_shared<SubPlane>(r0, red);
+    auto wall2 = make_shared<SubPlane>(r0, white);
+    auto wall3 = make_shared<SubPlane>(r0, white);
+    auto wall4 = make_shared<SubPlane>(r0, white);
+    Rectangle r1 = { -65.f, 65.f, -52.5f, 52.5f };
+    auto light0 = make_shared<SubPlane>(r1, light);
+
+    wall0->transform(point3(  0.0f, 277.5f, 277.5f), Mat3::rotation_y(Angle::Degree( 90.f)));
+    wall1->transform(point3(555.0f, 277.5f, 277.5f), Mat3::rotation_y(Angle::Degree(-90.f)));
+    wall2->transform(point3(277.5f, 277.5f, 555.0f), Mat3::rotation_y(Angle::Degree(180.f)));
+    wall3->transform(point3(277.5f,   0.0f, 277.5f), Mat3::rotation_x(Angle::Degree( 90.f)));
+    wall4->transform(point3(277.5f, 555.0f, 277.5f), Mat3::rotation_x(Angle::Degree(-90.f)));
+    light0->transform(point3(277.5f, 554.0f, 277.5f), Mat3::rotation_x(Angle::Degree(-90.f)));
+
+    objects.add(wall0);
+    objects.add(wall1);
+    objects.add(wall2);
+    objects.add(wall3);
+    objects.add(wall4);
+    objects.add(light0);
+
+    auto box1 = make_shared<box>(point3(165,330,165), aluminum);
+    box1->transform(vec3(347.5f, 165.f, 377.5f), Mat3::rotation_y(Angle::Degree(15.f)));
     objects.add(box1);
-
-    auto glass = make_shared<lambertian>(color(0.8, 0.8, 0.8));
-    // auto glass = make_shared<dielectric>(1.5);
-    objects.add(make_shared<sphere>(point3(190,90,190), 90 , glass));
-    scene.world = objects;
-    scene.lights = make_shared<xz_rect>(213, 343, 227, 332, 554, shared_ptr<Material>());
-
+    auto sphere = make_shared<Sphere>(point3(0, 0, 0), 90.f, glass);
+    sphere->translate(point3(190, 90, 190));
+    objects.add(sphere);
+    scene.world  = objects;
+    scene.lights = light0;
 }
 
 bool init(AppData& app)

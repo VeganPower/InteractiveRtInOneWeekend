@@ -145,7 +145,7 @@ private:
 class GGX : public Material
 {
 public:
-    GGX(texture const& a, double r, double m)
+    GGX(texture const& a, Real r, Real m)
         : albedo{a}
         , roughness{r}
         , metallicity{m}
@@ -167,9 +167,9 @@ public:
 
 public:
     texture albedo;
-    double roughness;
-    double metallicity;
-    // texture normal_map;
+    Real roughness;
+    Real metallicity;
+    // Real normal_map;
 };
 
 

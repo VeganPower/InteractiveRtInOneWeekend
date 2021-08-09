@@ -1,5 +1,4 @@
-#ifndef HITTABLE_LIST_H
-#define HITTABLE_LIST_H
+#pragma once
 //==============================================================================================
 // Originally written in 2016 by Peter Shirley <ptrshrl@gmail.com>
 //
@@ -28,18 +27,17 @@ class hittable_list : public hittable  {
         void clear() { objects.clear(); }
         void add(shared_ptr<hittable> object) { objects.push_back(object); }
 
-        virtual bool hit(
-            const ray& r, double t_min, double t_max, hit_record& rec) const override;
+        virtual bool hit_priv(const ray& r, Real t_min, Real t_max, hit_record& rec) const override;
 
-        virtual bool bounding_box(aabb& output_box) const override;
-        virtual double pdf_value(const vec3 &o, const vec3 &v) const override;
+        virtual Real pdf_value(const vec3 &o, const vec3 &v) const override;
         virtual vec3 random(const vec3 &o, std::mt19937& random_gen) const override;
 
     public:
         std::vector<shared_ptr<hittable>> objects;
+        std::vector<aabb> bounds;
 };
 
-inline bool hittable_list::hit(const ray& r, double t_min, double t_max, hit_record& rec) const {
+inline bool hittable_list::hit_priv(const ray& r, Real t_min, Real t_max, hit_record& rec) const {
     hit_record temp_rec;
     auto hit_anything = false;
     auto closest_so_far = t_max;
@@ -54,24 +52,21 @@ inline bool hittable_list::hit(const ray& r, double t_min, double t_max, hit_rec
     return hit_anything;
 }
 
-inline bool hittable_list::bounding_box(aabb& output_box) const {
-    if (objects.empty()) return false;
+// inline bool hittable_list::bounding_box(aabb& output_box) const {
+//     if (objects.empty()) return false;
+//     aabb temp_box;
+//     bool first_box = true;
+//     for (const auto& object : objects) {
+//         if (!object->bounding_box(temp_box)) return false;
+//         output_box = first_box ? temp_box : surrounding_box(output_box, temp_box);
+//         first_box = false;
+//     }
+//     return true;
+// }
 
-    aabb temp_box;
-    bool first_box = true;
-
-    for (const auto& object : objects) {
-        if (!object->bounding_box(temp_box)) return false;
-        output_box = first_box ? temp_box : surrounding_box(output_box, temp_box);
-        first_box = false;
-    }
-
-    return true;
-}
-
-inline double hittable_list::pdf_value(const point3& o, const vec3& v) const {
-    auto weight = 1.0/objects.size();
-    auto sum = 0.0;
+inline Real hittable_list::pdf_value(const point3& o, const vec3& v) const {
+    auto weight = Real{1.0}/objects.size();
+    auto sum = Real{0.0};
 
     for (const auto& object : objects)
         sum += weight * object->pdf_value(o, v);
@@ -87,5 +82,3 @@ inline vec3 hittable_list::random(const vec3 &o, std::mt19937& random_gen) const
     return objects[idx]->random(o, random_gen);
 }
 
-
-#endif
